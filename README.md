@@ -37,7 +37,7 @@ Edit the `.env` file with your settings:
 
 ```env
 # Server Configuration
-PORT=18795
+PORT=18796
 NODE_ENV=production
 
 # JWT Configuration (CHANGE THESE IN PRODUCTION!)
@@ -85,7 +85,7 @@ npm run start:prod
 Exchange API key for JWT token.
 
 ```bash
-curl -X POST http://localhost:18795/auth/token \
+curl -X POST http://localhost:18796/auth/token \
   -H "Content-Type: application/json" \
   -d '{"apiKey": "your-api-key"}'
 ```
@@ -102,12 +102,12 @@ Response:
 
 **GET /health**
 ```bash
-curl http://localhost:18795/health
+curl http://localhost:18796/health
 ```
 
 **GET /health/ready**
 ```bash
-curl http://localhost:18795/health/ready
+curl http://localhost:18796/health/ready
 ```
 
 ## WebSocket Connection
@@ -115,13 +115,13 @@ curl http://localhost:18795/health/ready
 ### Endpoint
 
 ```
-wss://your-server:18795/chat
+wss://your-server:18796/chat
 ```
 
 ### Authentication
 
 Include the JWT token in one of these ways:
-- Query parameter: `wss://server:18795/chat?token=YOUR_JWT_TOKEN`
+- Query parameter: `wss://server:18796/chat?token=YOUR_JWT_TOKEN`
 - Auth object: `{ auth: { token: 'YOUR_JWT_TOKEN' } }`
 
 ### Events
@@ -143,7 +143,7 @@ Include the JWT token in one of these ways:
 
 ```javascript
 const API_KEY = 'your-api-key';
-const SERVER_URL = 'https://your-server:18795';
+const SERVER_URL = 'https://your-server:18796';
 
 async function getToken() {
   const response = await fetch(`${SERVER_URL}/auth/token`, {
@@ -162,7 +162,7 @@ async function getToken() {
 import { io } from 'socket.io-client';
 
 const token = await getToken();
-const socket = io('wss://your-server:18795/chat', {
+const socket = io('wss://your-server:18796/chat', {
   auth: { token },
 });
 
@@ -189,7 +189,7 @@ Update the frontend's `useChat` hook to use Socket.IO instead of raw WebSocket:
 ```javascript
 import { io, Socket } from 'socket.io-client';
 
-const BRIDGE_URL = 'https://your-server:18795';
+const BRIDGE_URL = 'https://your-server:18796';
 const API_KEY = 'your-api-key';
 
 export function useChat() {
@@ -241,7 +241,7 @@ server {
 
     # WebSocket support
     location /chat {
-        proxy_pass http://localhost:18795;
+        proxy_pass http://localhost:18796;
         proxy_http_version 1.1;
         proxy_set_header Upgrade $http_upgrade;
         proxy_set_header Connection "upgrade";
@@ -254,7 +254,7 @@ server {
 
     # HTTP API
     location / {
-        proxy_pass http://localhost:18795;
+        proxy_pass http://localhost:18796;
         proxy_set_header Host $host;
         proxy_set_header X-Real-IP $remote_addr;
         proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
@@ -299,7 +299,7 @@ pm2 save
 
 ### Connection refused
 - Ensure the server is running: `npm run start:dev`
-- Check the port is not in use: `lsof -i :18795`
+- Check the port is not in use: `lsof -i :18796`
 - Verify CORS origins include your frontend URL
 
 ### Authentication failed
