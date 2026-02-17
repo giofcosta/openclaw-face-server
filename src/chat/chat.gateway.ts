@@ -73,6 +73,9 @@ export class ChatGateway
 
     // Send connection success
     client.emit('connected', { message: 'Connected to OpenClaw Face Server' });
+    
+    // Also emit a status event that the frontend can use
+    client.emit('status', { isConnected: true });
   }
 
   handleDisconnect(client: Socket) {
