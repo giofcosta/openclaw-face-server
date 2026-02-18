@@ -371,18 +371,44 @@ export class BridgeService implements OnModuleInit, OnModuleDestroy {
     const bridge = this.bridges.get(clientId);
     if (!bridge) return;
 
-    if (payload.delta?.text) {
-      bridge.onMessage({
-        type: 'response',
-        content: payload.delta.text,
-        streaming: true,
-        runId: payload.runId,
-      });
-    } else if (payload.status === 'completed' || payload.status === 'done') {
-      bridge.onMessage({
-        type: 'response_complete',
-        runId: payload.runId,
-      });
+    // Log for debugging
+    this.logger.debug(`[${clientId}] Agent event: stream=${payload.stream}, phase=${payload.data?.phase}`);
+
+    // Handle streaming assistant text (the actual response)
+    if (payload.stream === 'assistant' && payload.data) {
+      const delta = payload.data.delta || '';
+      const fullText = payload.data.text || '';
+      
+      if (delta || fullText) {
+        this.logger.log(`[${clientId}] Forwarding response: "${(delta || fullText).substring(0, 50)}..."`);
+        bridge.onMessage({
+          type: 'response',
+          text: fullText,
+          delta: delta,
+          content: delta || fullText, // For backward compat
+          streaming: true,
+          runId: payload.runId,
+          isBot: true,
+        });
+      }
+    }
+    
+    // Handle lifecycle events (start, end, error)
+    else if (payload.stream === 'lifecycle' && payload.data) {
+      if (payload.data.phase === 'end') {
+        this.logger.log(`[${clientId}] Response complete`);
+        bridge.onMessage({
+          type: 'response_complete',
+          runId: payload.runId,
+        });
+      } else if (payload.data.phase === 'error') {
+        this.logger.error(`[${clientId}] Agent error: ${payload.data.error}`);
+        bridge.onMessage({
+          type: 'error',
+          error: payload.data.error,
+          runId: payload.runId,
+        });
+      }
     }
   }
 
